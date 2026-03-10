@@ -289,31 +289,54 @@ public class PlayerControl : MonoBehaviour
 
 
     #region MoveTowards, Target Offset and FaceThis
+
     public void MoveTowardsTarget(Vector3 target_, float deltaDistance, string animationName_)
     {
-
         PerformAttackAnimation(animationName_);
         FaceThis(target_);
-        Vector3 finalPos = TargetOffset(target_, deltaDistance);
-        finalPos.y = 0;
-        transform.DOMove(finalPos, reachTime);
 
+        // Tính toán tọa độ sẽ lướt tới
+        Vector3 finalPos = TargetOffset(target_, deltaDistance);
+
+        // FIX LỖI ĐỘN THỔ: Lấy độ cao thực tế của mặt đất tại điểm đến
+        float terrainHeight = Terrain.activeTerrain.SampleHeight(finalPos)
+                            + Terrain.activeTerrain.transform.position.y;
+
+        finalPos.y = terrainHeight; // Ép nhân vật đứng trên mặt đất
+
+        // Thực hiện lướt tới
+        transform.DOMove(finalPos, reachTime);
     }
 
     public void GetClose() // Animation Event ---- for Moving Close to Target
     {
         Vector3 getCloseTarget;
-        if (target == null)
+
+        if (target == null && oldTarget != null)
         {
             getCloseTarget = oldTarget.transform.position;
         }
-        else
+        else if (target != null)
         {
             getCloseTarget = target.position;
         }
+        else
+        {
+            return;
+        }
+
         FaceThis(getCloseTarget);
+
+        // Tính toán tọa độ sẽ lướt tới
         Vector3 finalPos = TargetOffset(getCloseTarget, 1.4f);
-        finalPos.y = 0;
+
+        // FIX LỖI ĐỘN THỔ: Lấy độ cao thực tế của mặt đất
+        float terrainHeight = Terrain.activeTerrain.SampleHeight(finalPos)
+                            + Terrain.activeTerrain.transform.position.y;
+
+        finalPos.y = terrainHeight;
+
+        // Thực hiện lướt tới (nhanh hơn MoveTowardsTarget một chút)
         transform.DOMove(finalPos, 0.2f);
     }
 
@@ -324,19 +347,22 @@ public class PlayerControl : MonoBehaviour
 
     public Vector3 TargetOffset(Vector3 target, float deltaDistance)
     {
-        Vector3 position;
-        position = target;
+        Vector3 position = target;
         return Vector3.MoveTowards(position, transform.position, deltaDistance);
     }
 
     public void FaceThis(Vector3 target)
     {
-        Vector3 target_ = new Vector3(target.x, target.y, target.z);
+        // FIX LỖI XOAY MẶT TRÊN DỐC: Ép trục Y của target ngang bằng với trục Y của Player
+        // Giúp nhân vật không bị chúi đầu xuống đất hoặc ngửa cổ lên trời khi nhìn quái trên đồi
+        Vector3 target_ = new Vector3(target.x, transform.position.y, target.z);
+
         Quaternion lookAtRotation = Quaternion.LookRotation(target_ - transform.position);
         lookAtRotation.x = 0;
         lookAtRotation.z = 0;
         transform.DOLocalRotateQuaternion(lookAtRotation, 0.2f);
     }
+
     #endregion
 
     void OnDrawGizmosSelected()

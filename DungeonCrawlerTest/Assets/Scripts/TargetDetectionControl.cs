@@ -84,30 +84,42 @@ public class TargetDetectionControl : MonoBehaviour
                 inputDirection.y = 0;
                 inputDirection.Normalize();
 
-
                 Transform closestEnemy = GetClosestEnemyInDirection(inputDirection);
 
-                if (closestEnemy != null && (Vector3.Distance(transform.position, closestEnemy.position)) <= detectionRange)
+                // Vì khoảng cách đã được check ở hàm dưới, ở đây ta chỉ cần check null
+                if (closestEnemy != null)
                 {
                     playerControl.ChangeTarget(closestEnemy);
-                    // Do something with the closest enemy in the input direction
-                    Debug.Log("Closest enemy in direction: " + closestEnemy.name);
+                    if (debug) Debug.Log("Targeting: " + closestEnemy.name);
                 }
             }
-
         }
     }
-    
+
     Transform GetClosestEnemyInDirection(Vector3 inputDirection)
     {
         Transform closestEnemy = null;
-        float maxDotProduct = dotProductThreshold; // Start with the threshold value
+        float maxDotProduct = dotProductThreshold;
 
+        // Dùng for ngược hoặc foreach đều được, ở đây giữ nguyên foreach cho bạn dễ nhìn
         foreach (Transform enemy in allTargetsInScene)
         {
-            Vector3 enemyDirection = (enemy.position - transform.position).normalized;
+            // 1. FIX LỖI QUÁI CHẾT: Bỏ qua nếu enemy đã bị destroy hoặc tắt SetActive
+            if (enemy == null || !enemy.gameObject.activeInHierarchy) continue;
+
+            // 2. FIX LOGIC: Chỉ xét những con quái nằm trong tầm nhận diện (Detection Range)
+            float distanceToEnemy = Vector3.Distance(transform.position, enemy.position);
+            if (distanceToEnemy > detectionRange) continue;
+
+            // 3. FIX LỖI ĐỒI NÚI: Triệt tiêu trục Y để so sánh 2D ngang cho chuẩn
+            Vector3 dirToEnemy = enemy.position - transform.position;
+            dirToEnemy.y = 0;
+            Vector3 enemyDirection = dirToEnemy.normalized;
+
+            // Tính điểm Dot Product (1 = Nhìn thẳng mặt, 0 = Vuông góc, -1 = Xoay lưng lại)
             float dotProduct = Vector3.Dot(inputDirection, enemyDirection);
 
+            // Tìm ra kẻ địch có hướng input "chuẩn" nhất
             if (dotProduct > maxDotProduct)
             {
                 maxDotProduct = dotProduct;
