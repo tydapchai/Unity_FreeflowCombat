@@ -505,6 +505,8 @@ MonoBehaviour:
   attackRange: 2
   patrolRadius: 8
   attackCooldown: 2
+  maxPoise: 3
+  staggerDuration: 0.5
   waitTimeAtPoint: 2
 --- !u!195 &464678229
 NavMeshAgent:
@@ -1202,6 +1204,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 2095833549}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e073c3e7de4551143aa32997052dddd6,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2095833554}
   m_SourcePrefab: {fileID: 100100000, guid: e073c3e7de4551143aa32997052dddd6, type: 3}
 --- !u!4 &2095833548 stripped
 Transform:
@@ -1232,6 +1238,8 @@ MonoBehaviour:
   attackRange: 2
   patrolRadius: 8
   attackCooldown: 2
+  maxPoise: 3
+  staggerDuration: 0.5
   waitTimeAtPoint: 2
 --- !u!195 &2095833550
 NavMeshAgent:
@@ -1267,7 +1275,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d782edb45637dac4e929e9ea95b7788e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBase
-  maxHealth: 100
+  maxHealth: 1000
   currentHealth: 0
   isDead: 0
   anim: {fileID: 0}
@@ -1282,7 +1290,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1738930231}
   serializedVersion: 5
-  m_Mass: 4
+  m_Mass: 2
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -1307,6 +1315,29 @@ Animator:
     type: 3}
   m_PrefabInstance: {fileID: 2095833547}
   m_PrefabAsset: {fileID: 0}
+--- !u!136 &2095833554
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1738930231}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!1001 &1117743965428122343
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1654,12 +1685,12 @@ PrefabInstance:
     - target: {fileID: 4260093428422744844, guid: 04edefc61b09d4343a4e972fdc9283fe,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.03572647
+      value: 0.035726503
       objectReference: {fileID: 0}
     - target: {fileID: 4260093428422744844, guid: 04edefc61b09d4343a4e972fdc9283fe,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.010188286
+      value: -0.010188296
       objectReference: {fileID: 0}
     - target: {fileID: 5768558315885322021, guid: 04edefc61b09d4343a4e972fdc9283fe,
         type: 3}

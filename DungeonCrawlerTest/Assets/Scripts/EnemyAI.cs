@@ -3,7 +3,7 @@ using UnityEngine.AI;
 
 public class EnemyAI : MonoBehaviour
 {
-    public enum AIState { Idle, Patrol, Chase, Attack }
+    public enum AIState { Idle, Patrol, Chase, Attack, Staggered }
 
     [Header("AI State")]
     public AIState currentState;
@@ -17,19 +17,24 @@ public class EnemyAI : MonoBehaviour
     [Header("Movement Settings")]
     public float walkSpeed = 2.0f;
     public float chaseSpeed = 5.335f;
-    public float speedSmoothTime = 0.1f; // Độ mượt khi tăng/giảm tốc animation
+    public float speedSmoothTime = 0.1f;
     private float _currentAnimSpeed;
     private float _speedVelocity;
 
     [Header("Ranges")]
     public float detectionRange = 10f;
-    public float attackRange = 2.5f; // Tăng nhẹ để tránh bị vướng Collider
+    public float attackRange = 2.5f;
     public float patrolRadius = 8f;
 
-    [Header("Combat")]
+    [Header("Combat & Souls Mechanics")]
     public float attackCooldown = 2f;
     private float lastAttackTime;
     private bool isAttacking = false;
+
+    [Tooltip("Số đòn đánh chịu được trước khi bị khựng (Stagger)")]
+    public int maxPoise = 3;
+    private int currentPoise;
+    public float staggerDuration = 0.5f; // Thời gian khựng
 
     private Vector3 patrolDestination;
     private float idleTimer;
@@ -40,14 +45,14 @@ public class EnemyAI : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
         enemyBase = GetComponent<EnemyBase>();
+        currentPoise = maxPoise;
 
         if (playerTarget == null)
             playerTarget = GameObject.FindGameObjectWithTag("Player").transform;
 
-        // Cấu hình NavMesh Agent chuẩn theo ảnh của bạn
         agent.speed = chaseSpeed;
         agent.acceleration = 8f;
-        agent.stoppingDistance = attackRange - 0.5f; // Dừng trước khi chạm hẳn để đánh mượt hơn
+        agent.stoppingDistance = attackRange - 0.5f;
 
         currentState = AIState.Idle;
     }
@@ -60,67 +65,106 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
+        // Nếu đang bị khựng thì không làm gì cả
+        if (currentState == AIState.Staggered) return;
+
         float distanceToPlayer = Vector3.Distance(transform.position, playerTarget.position);
 
-        // Chặn Logic khi đang diễn hoạt đòn đánh (để không bị trượt đi khi đang vung tay)
         if (isAttacking)
         {
-            UpdateAnimation(0); // Ép animation về Idle khi đang đánh
+            UpdateAnimation(0);
             return;
         }
 
         switch (currentState)
         {
-            case AIState.Idle:
-                IdleState(distanceToPlayer);
-                break;
-            case AIState.Patrol:
-                PatrolState(distanceToPlayer);
-                break;
-            case AIState.Chase:
-                ChaseState(distanceToPlayer);
-                break;
-            case AIState.Attack:
-                AttackState(distanceToPlayer);
-                break;
+            case AIState.Idle: IdleState(distanceToPlayer); break;
+            case AIState.Patrol: PatrolState(distanceToPlayer); break;
+            case AIState.Chase: ChaseState(distanceToPlayer); break;
+            case AIState.Attack: AttackState(distanceToPlayer); break;
         }
 
-        // Đồng bộ animation dựa trên vận tốc thực tế của Agent
         UpdateAnimation(agent.velocity.magnitude);
     }
 
     void UpdateAnimation(float targetSpeed)
     {
-        // Làm mượt giá trị Speed để tránh animation thay đổi đột ngột
         _currentAnimSpeed = Mathf.SmoothDamp(_currentAnimSpeed, targetSpeed, ref _speedVelocity, speedSmoothTime);
         anim.SetFloat("Speed", _currentAnimSpeed);
     }
 
-    #region AI States
+    // --- CƠ CHẾ KNOCKBACK & STAGGER CHUẨN SOULS ---
+    public void TakeHit(Vector3 attackerPos, float knockbackForce)
+    {
+        currentPoise--;
 
+        if (currentPoise <= 0)
+        {
+            // Bị phá thế (Stagger)
+            currentPoise = maxPoise; // Reset lại poise
+            StartCoroutine(KnockbackRoutine(attackerPos, knockbackForce));
+        }
+        else
+        {
+            // Chỉ phát hiệu ứng bị thương nhẹ (nếu bạn có animation GetHit nhẹ)
+            anim.SetTrigger("GetHit");
+        }
+    }
+
+    private System.Collections.IEnumerator KnockbackRoutine(Vector3 attackerPos, float force)
+    {
+        currentState = AIState.Staggered;
+        isAttacking = false;
+        agent.isStopped = true;
+
+        // Tính hướng đẩy lùi (từ Player hướng về Enemy)
+        Vector3 knockbackDir = (transform.position - attackerPos).normalized;
+        knockbackDir.y = 0;
+
+        // Quay mặt về phía người chơi
+        transform.rotation = Quaternion.LookRotation(-knockbackDir);
+
+        anim.SetTrigger("Stagger");
+
+        // MÔ PHỎNG RIGIDBODY IMPULSE
+        // Chúng ta đặt vận tốc ban đầu rất lớn rồi giảm dần theo thời gian
+        float currentForce = force * 1.5f; // Nhân hệ số để cú đánh có sức nặng
+        float friction = 10f;             // Độ ma sát (càng cao dừng càng nhanh)
+
+        while (currentForce > 0.1f)
+        {
+            // Gán vận tốc trực tiếp cho NavMeshAgent
+            agent.velocity = knockbackDir * currentForce;
+
+            // Giảm dần lực theo thời gian (Deceleration)
+            currentForce = Mathf.Lerp(currentForce, 0, Time.deltaTime * friction);
+
+            yield return null;
+        }
+
+        // Dừng hẳn trước khi trả lại quyền điều khiển cho AI
+        agent.velocity = Vector3.zero;
+        yield return new WaitForSeconds(0.1f);
+
+        agent.isStopped = false;
+        currentState = AIState.Chase;
+    }
+
+    #region AI Logic States (Giữ nguyên các hàm cũ của bạn nhưng tối ưu hóa một chút)
     void IdleState(float distanceToPlayer)
     {
         agent.isStopped = true;
         if (distanceToPlayer <= detectionRange) { currentState = AIState.Chase; return; }
-
         idleTimer += Time.deltaTime;
-        if (idleTimer >= waitTimeAtPoint)
-        {
-            SearchNewPatrolPoint();
-            currentState = AIState.Patrol;
-            idleTimer = 0f;
-        }
+        if (idleTimer >= waitTimeAtPoint) { SearchNewPatrolPoint(); currentState = AIState.Patrol; idleTimer = 0f; }
     }
 
     void PatrolState(float distanceToPlayer)
     {
         agent.isStopped = false;
         agent.speed = walkSpeed;
-
         if (distanceToPlayer <= detectionRange) { currentState = AIState.Chase; return; }
-
-        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
-            currentState = AIState.Idle;
+        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance) currentState = AIState.Idle;
     }
 
     void ChaseState(float distanceToPlayer)
@@ -128,7 +172,6 @@ public class EnemyAI : MonoBehaviour
         agent.isStopped = false;
         agent.speed = chaseSpeed;
         agent.SetDestination(playerTarget.position);
-
         if (distanceToPlayer <= attackRange) currentState = AIState.Attack;
         else if (distanceToPlayer > detectionRange + 2f) currentState = AIState.Idle;
     }
@@ -136,18 +179,11 @@ public class EnemyAI : MonoBehaviour
     void AttackState(float distanceToPlayer)
     {
         agent.isStopped = true;
-
-        // Xoay mặt về phía Player
         Vector3 dir = (playerTarget.position - transform.position).normalized;
         dir.y = 0;
         if (dir != Vector3.zero) transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 10f);
 
-        if (distanceToPlayer > attackRange + 0.5f) // Thêm sai số để tránh nhảy State liên tục
-        {
-            isAttacking = false;
-            currentState = AIState.Chase;
-            return;
-        }
+        if (distanceToPlayer > attackRange + 0.5f) { isAttacking = false; currentState = AIState.Chase; return; }
 
         if (Time.time >= lastAttackTime + attackCooldown)
         {
@@ -156,15 +192,11 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-    // Dùng Coroutine để quản lý thời gian đánh, tránh mất animation di chuyển sau đó
     System.Collections.IEnumerator PlayAttackAnimation()
     {
         isAttacking = true;
         anim.SetTrigger("Attack");
-
-        // Chờ một khoảng thời gian ngắn để animation Attack thực hiện (tùy độ dài clip đánh của bạn)
-        yield return new WaitForSeconds(1.5f);
-
+        yield return new WaitForSeconds(1.5f); // Khớp với clip đánh
         isAttacking = false;
     }
 
