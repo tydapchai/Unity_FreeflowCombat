@@ -1335,7 +1335,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1721948933025637449}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.000000013451716, y: -0.0000000020296231, z: -0.14919342, w: 0.98880804}
+  m_LocalRotation: {x: 0.000000013451716, y: -0.0000000020296231, z: -0.14919342,
+    w: 0.98880804}
   m_LocalPosition: {x: 0.28470385, y: -2.4868996e-16, z: -5.684342e-16}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -3757,6 +3758,8 @@ GameObject:
   - component: {fileID: 5702065906356218872}
   - component: {fileID: 4312332204841233886}
   - component: {fileID: 344731887555160717}
+  - component: {fileID: 6202415928611062407}
+  - component: {fileID: 6988891885509102194}
   m_Layer: 6
   m_Name: PlayerController (1)
   m_TagString: Player
@@ -3924,7 +3927,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Actions: {fileID: -944628639613478452, guid: 4419d82f33d36e848b3ed5af4c8da37e, type: 3}
+  m_Actions: {fileID: -944628639613478452, guid: 4419d82f33d36e848b3ed5af4c8da37e,
+    type: 3}
   m_NotificationBehavior: 0
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
@@ -4140,6 +4144,43 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &6202415928611062407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4765933502095954815}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 761a0e1e13fda014e9d1e7c1b4060b8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+  maxHealth: 35
+  currentHealth: 0
+  isDead: 0
+  anim: {fileID: 0}
+  statBar: {fileID: 0}
+  statBarFade: {fileID: 0}
+  fadeSpeed: 0.5
+  currentValueText: {fileID: 0}
+  maxValueText: {fileID: 0}
+--- !u!114 &6988891885509102194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4765933502095954815}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfe1a85a86a1fe543964afc33fb4fb6a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCombat
+  anim: {fileID: 9150662424260592053}
+  swordModel: {fileID: 2729094727854979171}
+  isEquipped: 0
+  transitionSpeed: 5
 --- !u!1 &4912711080961516313
 GameObject:
   m_ObjectHideFlags: 0
