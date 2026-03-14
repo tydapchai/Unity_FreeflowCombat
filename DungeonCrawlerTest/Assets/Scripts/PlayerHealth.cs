@@ -12,6 +12,9 @@ public class PlayerHealth : MonoBehaviour
     [Header("Components")]
     public Animator anim;
 
+    [Header("Dodge Settings")]
+    public bool isDodging = false;
+
     // Gọi script ThirdPersonController (hoặc script di chuyển của bạn) để tắt nó đi khi chết
     private StarterAssets.ThirdPersonController playerController;
     private Collider playerCollider;
