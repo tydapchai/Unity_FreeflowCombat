@@ -183,6 +183,7 @@ public class BossAI : MonoBehaviour
     {
         if (enemyBase.isDead) return;
 
+        CancelInvoke("RecoverFromHit");
         // 1. HỦY CHIÊU NGAY LẬP TỨC
         isAttacking = false;
 

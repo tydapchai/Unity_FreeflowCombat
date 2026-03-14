@@ -16,81 +16,84 @@ public class EnemyBase : MonoBehaviour
     [Header("VFX & UI")]
     [SerializeField] private GameObject hitVfx;
     [SerializeField] private GameObject activeTargetObject;
-    private EnemyAI enemyAI;
 
-    // Start is called before the first frame update
+    // References tới các loại AI
+    private EnemyAI enemyAI;
+    private BossAI bossAI;
+
     void Start()
     {
         ActiveTarget(false);
-
-        // Khởi tạo máu đầy khi mới xuất hiện
         currentHealth = maxHealth;
 
-        // Tự động tìm Component nếu bạn quên kéo thả trong Inspector
         if (anim == null) anim = GetComponent<Animator>();
         if (enemyCollider == null) enemyCollider = GetComponent<Collider>();
+
+        // Tìm các script AI đi kèm
         enemyAI = GetComponent<EnemyAI>();
+        bossAI = GetComponent<BossAI>();
     }
 
-    // Hàm nhận sát thương (Player sẽ gọi hàm này khi chém trúng)
     public void TakeDamage(float damageAmount, bool playDefaultHitReaction = true)
     {
-        if (isDead) return; // Nếu chết rồi thì bỏ qua
+        if (isDead) return;
 
         currentHealth -= damageAmount;
         Debug.Log(gameObject.name + " nhận " + damageAmount + " sát thương! Máu còn: " + currentHealth);
 
-        // Enemy có AI sẽ dùng hit reaction riêng trong EnemyAI để tránh animation chồng lên stagger/knockback.
-        if (playDefaultHitReaction && enemyAI == null && anim != null)
+        // --- PHẦN SỬA CHÍNH: ĐIỀU PHỐI HIỆU ỨNG TRÚNG ĐÒN ---
+
+        // 1. Lấy vị trí Player để tính hướng văng (Knockback)
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        Vector3 attackerPos = (player != null) ? player.transform.position : transform.position;
+
+        // 2. Nếu là Boss: Gọi TakeHit trong BossAI để hủy chiêu và khựng
+        if (bossAI != null)
         {
-            anim.SetTrigger("Hit");
+            bossAI.TakeHit(attackerPos, 5f); // 5f là lực đẩy mặc định
+        }
+        // 3. Nếu là Quái thường: Gọi TakeHit trong EnemyAI
+        else if (enemyAI != null)
+        {
+            enemyAI.TakeHit(attackerPos, 4f);
+        }
+        // 4. Nếu không có AI xịn (quái đứng yên): Chạy GetHit đơn giản
+        else if (playDefaultHitReaction && anim != null)
+        {
+            anim.SetTrigger("GetHit");
         }
 
-        // Kiểm tra xem máu đã hết chưa
+        // Kiểm tra chết
         if (currentHealth <= 0)
         {
             Die();
         }
     }
 
-    // Hàm xử lý khi quái chết
     void Die()
     {
         isDead = true;
         Debug.Log(gameObject.name + " đã bị tiêu diệt!");
 
-        // 1. Chạy Animation gục ngã (nhớ tạo parameter bool "isDead" trong Animator của quái nhé)
         if (anim != null)
         {
+            // Đồng bộ với Animator mới: dùng bool isDead
             anim.SetBool("isDead", true);
         }
 
-        // 2. Tắt Collider để Player không chém trúng cái xác nữa
-        if (enemyCollider != null)
-        {
-            enemyCollider.enabled = false;
-        }
+        if (enemyCollider != null) enemyCollider.enabled = false;
 
-        // 3. Tắt luôn vòng tròn Target
         ActiveTarget(false);
-
-        // 4. Hủy object sau 3 giây để dọn rác (bạn có thể chỉnh số 3f này)
         Destroy(gameObject, 3f);
     }
 
     public void SpawnHitVfx(Vector3 Pos_)
     {
-        if (hitVfx != null)
-        {
-            Instantiate(hitVfx, Pos_, Quaternion.identity);
-        }
+        if (hitVfx != null) Instantiate(hitVfx, Pos_, Quaternion.identity);
     }
 
     public void ActiveTarget(bool bool_)
     {
-        if (activeTargetObject != null)
-        {
-            activeTargetObject.SetActive(bool_);
-        }
+        if (activeTargetObject != null) activeTargetObject.SetActive(bool_);
     }
 }

@@ -203,6 +203,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 166335915289076197, guid: f8e6491a46ce7334089af7142aeed916,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 599369271292659699, guid: f8e6491a46ce7334089af7142aeed916,
         type: 3}
       propertyPath: attackPos
@@ -218,10 +223,35 @@ PrefabInstance:
       propertyPath: playerLayer.m_Bits
       value: 64
       objectReference: {fileID: 0}
+    - target: {fileID: 1412971036992527411, guid: f8e6491a46ce7334089af7142aeed916,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3611107986980842063, guid: f8e6491a46ce7334089af7142aeed916,
         type: 3}
       propertyPath: m_Name
       value: Target
+      objectReference: {fileID: 0}
+    - target: {fileID: 4363698986954653463, guid: f8e6491a46ce7334089af7142aeed916,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5265462664772755218, guid: f8e6491a46ce7334089af7142aeed916,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5581891394843673409, guid: f8e6491a46ce7334089af7142aeed916,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6025441480202535623, guid: f8e6491a46ce7334089af7142aeed916,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6602774118673426804, guid: f8e6491a46ce7334089af7142aeed916,
         type: 3}
@@ -3713,6 +3743,11 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: e073c3e7de4551143aa32997052dddd6,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1728280593283003582, guid: e073c3e7de4551143aa32997052dddd6,
         type: 3}
       propertyPath: m_Layer
@@ -5070,7 +5105,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d782edb45637dac4e929e9ea95b7788e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBase
-  maxHealth: 100
+  maxHealth: 1000
   currentHealth: 0
   isDead: 0
   anim: {fileID: 3180073625201381382}
@@ -5085,7 +5120,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2369049314504166821}
   serializedVersion: 5
-  m_Mass: 7
+  m_Mass: 10
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -5116,27 +5151,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8898020f854c154e86eae870fedce5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossAI
+  currentState: 0
   playerTarget: {fileID: 2142148170}
-  anim: {fileID: 3180073625201381382}
   agent: {fileID: 3180073625201381384}
-  currentPhase: 1
+  anim: {fileID: 3180073625201381382}
+  walkSpeed: 2
   chaseSpeed: 3.5
+  speedSmoothTime: 0.1
+  detectionRange: 12
   attackRange: 2.5
+  patrolRadius: 10
   attackCooldown: 2.5
   isAttacking: 0
-  bossRenderer: {fileID: 0}
-  phase2Material: {fileID: 0}
-  transformationEffect: {fileID: 0}
+  currentPhase: 1
+  maxPoise: 5
+  staggerDuration: 0.8
+  hitRecoveryTime: 0.4
   rightAttackPoint: {fileID: 868200616}
   leftAttackPoint: {fileID: 1818082174}
   attackRadius: 1
-  attackDamage: 30
   playerLayer:
     serializedVersion: 2
     m_Bits: 64
-  sweepRadius: 4
-  sweepAngle: 120
-  sweepDamage: 45
 --- !u!4 &3250326026396897626
 Transform:
   m_ObjectHideFlags: 0
@@ -6036,17 +6072,17 @@ PrefabInstance:
     - target: {fileID: 2691777470995996152, guid: 04edefc61b09d4343a4e972fdc9283fe,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.31796095
+      value: 0.31796092
       objectReference: {fileID: 0}
     - target: {fileID: 2691777470995996152, guid: 04edefc61b09d4343a4e972fdc9283fe,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.33590665
+      value: -0.33590662
       objectReference: {fileID: 0}
     - target: {fileID: 2691777470995996152, guid: 04edefc61b09d4343a4e972fdc9283fe,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.12161498
+      value: 0.12161496
       objectReference: {fileID: 0}
     - target: {fileID: 4260093428422744844, guid: 04edefc61b09d4343a4e972fdc9283fe,
         type: 3}
